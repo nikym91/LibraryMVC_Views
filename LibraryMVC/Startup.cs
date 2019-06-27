@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LibraryMVC.Context;
+using LibraryMVC.Models;
+using LibraryMVC.Models.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -36,8 +38,8 @@ namespace LibraryMVC
             services.AddDbContext<EFLibraryContext>(options =>
                options.UseSqlServer(
                    Configuration["Data:Library:ConnectionString"]));
-            //services.AddTransient<IProductRepository, EFProductRepository>();
-
+            services.AddTransient<BookRepository, EFBookRepository>();
+            services.AddTransient<AuthorRepository, EFAuthorRepository>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
