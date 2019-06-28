@@ -1,4 +1,6 @@
-﻿using LibraryMVC.Models.Interfaces;
+﻿using LibraryMVC.Context;
+using LibraryMVC.Models.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,19 +10,60 @@ namespace LibraryMVC.Models
 {
     public class EFAuthorRepository : AuthorRepository
     {
-        public void AddAuthor()
+        private readonly EFLibraryContext context;
+
+        public EFAuthorRepository(EFLibraryContext ctx)
         {
-            throw new NotImplementedException();
+            context = ctx;
         }
 
-        public void DeleteAuthor()
+        public async Task AddAuthorAsync(Author author)
         {
-            throw new NotImplementedException();
+            context.Add(author);
+            await SaveChangesAsync();
+        }
+        private async Task SaveChangesAsync()
+        {
+            await context.SaveChangesAsync();
         }
 
-        public IEnumerable<Author> GetAllAuthors()
+        public bool AuthorExistById(int id)
         {
-            throw new NotImplementedException();
+            return context.Authors.Any(e => e.Id == id);
+        }
+
+        public Task<Author> DeleteAuthor(int? id)
+        {
+            return context.Authors
+                .FirstOrDefaultAsync(m => m.Id == id);
+        }
+
+        public async Task DeleteAuthorConfirmed(Author author)
+        {
+            context.Authors.Remove(author);
+            await SaveChangesAsync();
+        }
+
+        public Task<Author> DetailAuthor(int? id)
+        {
+            return context.Authors
+                .FirstOrDefaultAsync(m => m.Id == id);
+        }
+
+        public async Task EditAuthor(Author author)
+        {
+            context.Update(author);
+            await SaveChangesAsync();
+        }
+
+        public Task<Author> EditAuthorById(int? id)
+        {
+            return context.Authors.FindAsync(id);
+        }
+
+        public IQueryable<Author> GetAllAuthors()
+        {
+            return context.Authors;
         }
     }
 }

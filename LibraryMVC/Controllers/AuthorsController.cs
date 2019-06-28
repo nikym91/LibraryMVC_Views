@@ -1,28 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using LibraryMVC.Context;
 using LibraryMVC.Models;
+using LibraryMVC.Models.Interfaces;
 
 namespace LibraryMVC.Controllers
 {
     public class AuthorsController : Controller
     {
-        private readonly EFLibraryContext _context;
+        private AuthorRepository AuthorRepository;
 
-        public AuthorsController(EFLibraryContext context)
+        public AuthorsController(AuthorRepository repo)
         {
-            _context = context;
+            AuthorRepository = repo;
         }
 
         // GET: Authors
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Authors.ToListAsync());
+            var efContext = AuthorRepository.GetAllAuthors();
+            return View(await efContext.ToListAsync());
         }
 
         // GET: Authors/Details/5
@@ -33,8 +30,7 @@ namespace LibraryMVC.Controllers
                 return NotFound();
             }
 
-            var author = await _context.Authors
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var author = await AuthorRepository.DetailAuthor(id);
             if (author == null)
             {
                 return NotFound();
@@ -58,8 +54,7 @@ namespace LibraryMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(author);
-                await _context.SaveChangesAsync();
+                await AuthorRepository.AddAuthorAsync(author);
                 return RedirectToAction(nameof(Index));
             }
             return View(author);
@@ -73,7 +68,7 @@ namespace LibraryMVC.Controllers
                 return NotFound();
             }
 
-            var author = await _context.Authors.FindAsync(id);
+            var author = await AuthorRepository.EditAuthorById(id);
             if (author == null)
             {
                 return NotFound();
@@ -97,8 +92,7 @@ namespace LibraryMVC.Controllers
             {
                 try
                 {
-                    _context.Update(author);
-                    await _context.SaveChangesAsync();
+                    await AuthorRepository.EditAuthor(author);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -124,8 +118,7 @@ namespace LibraryMVC.Controllers
                 return NotFound();
             }
 
-            var author = await _context.Authors
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var author = await AuthorRepository.DeleteAuthor(id);
             if (author == null)
             {
                 return NotFound();
@@ -139,15 +132,15 @@ namespace LibraryMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var author = await _context.Authors.FindAsync(id);
-            _context.Authors.Remove(author);
-            await _context.SaveChangesAsync();
+            var author = await AuthorRepository.EditAuthorById(id);
+
+            await AuthorRepository.DeleteAuthorConfirmed(author);
             return RedirectToAction(nameof(Index));
         }
 
         private bool AuthorExists(int id)
         {
-            return _context.Authors.Any(e => e.Id == id);
+            return AuthorRepository.AuthorExistById(id);
         }
     }
 }

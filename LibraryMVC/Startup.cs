@@ -38,6 +38,7 @@ namespace LibraryMVC
             services.AddDbContext<EFLibraryContext>(options =>
                options.UseSqlServer(
                    Configuration["Data:Library:ConnectionString"]));
+
             services.AddTransient<BookRepository, EFBookRepository>();
             services.AddTransient<AuthorRepository, EFAuthorRepository>();
 
